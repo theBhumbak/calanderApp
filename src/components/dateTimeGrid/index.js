@@ -32,15 +32,6 @@ const getPostionAndHeightForEvent = (event = {}, slabHeight) => {
       DurationInHours * heightPerHour + DurationInMin === 60
         ? 0
         : DurationInMin * heightPerMin;
-    console.log(
-      '>>>> height',
-      slabHeight,
-      eventSectionHeight,
-      DurationInHours,
-      DurationInHours * heightPerHour,
-      DurationInMin,
-      heightPerMin,
-    );
   }
   return [startPos, eventSectionHeight];
 };
