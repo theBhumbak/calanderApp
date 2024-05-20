@@ -13,7 +13,7 @@ export const fetchTasks = createAsyncThunk(
 );
 
 export const createTask = createAsyncThunk(
-  'tasks,/createTask',
+  'tasks/createTask',
   async taskData => {
     const response = await taskService.createTask(taskData);
     return response;
@@ -30,7 +30,7 @@ export const updateTask = createAsyncThunk(
 
 export const deleteTask = createAsyncThunk('tasks/deleteTask', async id => {
   await taskService.deleteTask(id);
-  return id;  
+  return id;
 });
 
 const taskSlice = createSlice({

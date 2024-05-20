@@ -15,6 +15,9 @@ export const StackNavigator = () => {
       <Stack.Screen
         name={routeNames.AddTask}
         component={routeScreens.TaskDetail}
+        options={{
+          headerTitle: '',
+        }}
       />
     </Stack.Navigator>
   );

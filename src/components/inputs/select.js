@@ -1,4 +1,5 @@
 import {Text, TouchableOpacity, View} from 'react-native';
+import {s} from 'react-native-size-matters';
 
 const categoryColorMap = {
   Health: 'green',
@@ -13,30 +14,34 @@ export const Select = ({
     {label: 'Home', value: 'Home'},
   ],
   value,
+  editable = true,
   onChangeValue,
 }) => {
   return (
     <View
       style={{
         flexDirection: 'row',
-        gap: 8,
+        gap: s(8),
       }}>
       {data.map(item => {
         const isActive = value === item.value;
         return (
           <TouchableOpacity
             key={item.value}
+            disabled={!editable}
             onPress={() => {
-              onChangeValue(item.value);
+              editable && onChangeValue(item.value);
             }}
             style={{
               borderColor: isActive ? 'black' : 'transparent',
-              borderRadius: 8,
-              padding: 4,
-              borderWidth: 2,
+              paddingVertical: s(4),
+              paddingHorizontal: s(8),
+              borderWidth: s(2),
+              justifyContent: 'center',
+              alignItems: 'center',
               backgroundColor: categoryColorMap[item.value],
             }}>
-            <Text style={{color: 'white'}}>{item.label}</Text>
+            <Text style={{color: 'black'}}>{item.label}</Text>
           </TouchableOpacity>
         );
       })}

@@ -1,14 +1,15 @@
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
-import React, {memo, useEffect, useRef, useState} from 'react';
+import React, {memo, useCallback, useEffect, useRef, useState} from 'react';
 import {s, vs, ms, mvs, scale} from 'react-native-size-matters';
 import moment from 'moment';
 import {useNavigation} from '@react-navigation/native';
 import {routeNames} from '../../navigation/routeNames';
 import {dummyDataDTG} from './dummyDataDTG';
+
 const getPostionAndHeightForEvent = (event = {}, slabHeight) => {
   const {startTime = '', endTime = '', startDate, endDate} = event;
   let startPos = 0;
-  let eventSectionHeight = 0;
+  let eventSectionHeight = 2;
   const heightPerHour = slabHeight;
   const heightPerMin = slabHeight / 60;
 
@@ -21,23 +22,15 @@ const getPostionAndHeightForEvent = (event = {}, slabHeight) => {
     eventSectionHeight =
       DurationInHours * heightPerHour + DurationInMin * heightPerMin;
   } else if (startDate) {
-    const [_, startHour, startMin] = startDate.split(':');
-    console.log();
-    startPos = startHour * heightPerHour + parseInt(startMin) * heightPerMin;
+    const startHour = moment(startDate).hours();
+    const startMin = moment(startDate).minutes();
+
+    startPos = startHour * heightPerHour + startMin * heightPerMin;
     const DurationInHours = moment(endDate).diff(moment(startDate), 'h');
     const DurationInMin = moment(event.endDate).diff(moment(startDate), 'm');
     eventSectionHeight =
       DurationInHours * heightPerHour + DurationInMin * heightPerMin;
-    console.log('>>>>> Duration', {
-      startDate,
-      endDate,
-      DurationInHours,
-      DurationInMin,
-      startHour,
-      startMin: parseInt(startMin),
-    });
   }
-
   return [startPos, eventSectionHeight];
 };
 const categoryColorMap = {
@@ -79,6 +72,7 @@ export const HourSlab = ({hour, height = 50, index = false, date, time}) => {
       onPress={() => {
         navigation.navigate(routeNames.AddTask, {
           startDate: getDateWithTimeFromHourSlab(date, hour.labelAM),
+          type: 'create',
         });
       }}
       style={{
@@ -116,7 +110,7 @@ export const TimeLineColumnBackground = ({
   date = '',
   ...rest
 }) => {
-  console.log('>>>>> events', events);
+  const navigation = useNavigation();
   return (
     <View style={{position: 'relative'}}>
       <View
@@ -141,12 +135,14 @@ export const TimeLineColumnBackground = ({
           event,
           slabHeight,
         );
-        console.log('>>>>>> event', event, topPostion, height);
         const {category, title = 'title'} = event;
         return (
           <TouchableOpacity
             onPress={() => {
-              console.log('>>>> event click', event);
+              navigation.navigate(routeNames.AddTask, {
+                ...event,
+                type: 'edit',
+              });
             }}
             key={index}
             style={{
@@ -230,16 +226,11 @@ export const DateTimeGrid = memo(({tasks = [], daysInView = 3}) => {
 
   const getTaskIndex = startDate => {
     const currentDate = moment();
-    return currentDate.diff(startDate, 'd');
+    return moment(startDate).diff(currentDate, 'd');
   };
-  console.log('>>>> EmptyData30Days');
   tasks.map(task => {
-    console.log('>>>> tasks map', getTaskIndex(task.startDate));
-    EmptyData30Days[0].push(task);
+    EmptyData30Days[getTaskIndex(task.startDate)].push(task);
   });
-
-  console.log('>>>>> EmptyData30Days', EmptyData30Days);
-
   const ColWidthFull = 290;
   const colWidth = ColWidthFull / daysInView;
   const gridWidth = colWidth * dumyMonth.length;
@@ -436,13 +427,22 @@ export const DateTimeGrid = memo(({tasks = [], daysInView = 3}) => {
   ];
   _30DaysData = EmptyData30Days;
   const [filteredData, setFilteredData] = useState(_30DaysData);
+  const [filter, setFilter] = useState('');
   const timeScrollRef = useRef(null);
-  const filterByCategory = (data, category) => {
-    const filteredData = data.map(dayTasks =>
-      dayTasks.filter(task => task.category === category),
-    );
-    setFilteredData(filteredData);
-  };
+
+  const filterByCategory = useCallback(
+    (data, category = '') => {
+      if (category === '') {
+        setFilteredData(_30DaysData);
+        return;
+      }
+      const filteredData = data.map(dayTasks =>
+        dayTasks.filter(task => task.category === category),
+      );
+      setFilteredData(filteredData);
+    },
+    [tasks],
+  );
   const currentDate = moment();
   const currentTime = currentDate.format('HH:mm');
   const currentTimePlus1 = currentDate.add(1, 'minute').format('HH:mm');
@@ -493,7 +493,9 @@ export const DateTimeGrid = memo(({tasks = [], daysInView = 3}) => {
       )[0],
     });
   }, [currentTime]);
-
+  useEffect(() => {
+    filterByCategory(_30DaysData, filter);
+  }, [tasks, filter]);
   const getDateAndDayPerIndex = index => {
     const currentDate = moment();
     const targetDate = currentDate.add(index, 'days');
@@ -604,7 +606,7 @@ export const DateTimeGrid = memo(({tasks = [], daysInView = 3}) => {
               alignItems: 'center',
             }}
             onPress={() => {
-              setFilteredData(_30DaysData);
+              setFilter('');
             }}>
             <Text>{'All'}</Text>
           </TouchableOpacity>
@@ -619,7 +621,7 @@ export const DateTimeGrid = memo(({tasks = [], daysInView = 3}) => {
                   backgroundColor: categoryColorMap[category],
                 }}
                 onPress={() => {
-                  filterByCategory(_30DaysData, category);
+                  setFilter(category);
                 }}>
                 <Text>{category}</Text>
               </TouchableOpacity>
