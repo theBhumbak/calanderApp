@@ -597,7 +597,7 @@ export const DateTimeGrid = memo(({tasks = [], daysInView = 3}) => {
           borderTopWidth: 1,
           borderColor: 'lightgray',
         }}>
-        <ScrollView horizontal={true}>
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           <TouchableOpacity
             style={{
               backgroundColor: 'pink',

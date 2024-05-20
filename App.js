@@ -8,23 +8,18 @@ import {
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {Provider} from 'react-redux';
-import {persistor, store} from './src/store';
-import {PersistGate} from 'redux-persist/integration/react';
 import io from 'socket.io-client';
-import {NavigationContainer} from '@react-navigation/native';
 import {StackNavigator} from './src/navigation/stackNavigation';
 import {useServerUrl} from './src/utils';
 import Toast from 'react-native-toast-message';
-// const TaskDetail = () => {
-const showToast = data => {
+const showToast = (event = {}) => {
+  const {title = 'event', description = ''} = event;
   Toast.show({
     type: 'success',
-    text1: 'Noti',
-    text2: 'This is a toast message 👋',
+    text1: 'Reminder for ' + title,
+    text2: description,
   });
 };
-// };
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -36,9 +31,8 @@ function App() {
     // Initialize the Socket.IO client
     const socket = io(SOCKET_SERVER_URL);
     // Listen for the 'receive_message' event
-    socket.on('receive_message', data => {
-      // showToast();
-      console.log('Received cronTasks:', data);
+    socket.on('receive_message', (data = []) => {
+      if (data?.length) showToast(data[0]);
     });
 
     // Clean up
