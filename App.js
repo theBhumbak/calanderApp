@@ -32,6 +32,7 @@ function App() {
     const socket = io(SOCKET_SERVER_URL);
     // Listen for the 'receive_message' event
     socket.on('receive_message', (data = []) => {
+      console.log('receive_message', data);
       if (data?.length) showToast(data[0]);
     });
 

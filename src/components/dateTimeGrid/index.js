@@ -29,7 +29,18 @@ const getPostionAndHeightForEvent = (event = {}, slabHeight) => {
     const DurationInHours = moment(endDate).diff(moment(startDate), 'h');
     const DurationInMin = moment(event.endDate).diff(moment(startDate), 'm');
     eventSectionHeight =
-      DurationInHours * heightPerHour + DurationInMin * heightPerMin;
+      DurationInHours * heightPerHour + DurationInMin === 60
+        ? 0
+        : DurationInMin * heightPerMin;
+    console.log(
+      '>>>> height',
+      slabHeight,
+      eventSectionHeight,
+      DurationInHours,
+      DurationInHours * heightPerHour,
+      DurationInMin,
+      heightPerMin,
+    );
   }
   return [startPos, eventSectionHeight];
 };
